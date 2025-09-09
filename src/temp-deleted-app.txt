@@ -1,0 +1,9 @@
+// Former content of /App.tsx - moved here to prevent build conflicts
+// DELETED: This root App.tsx was causing import conflicts
+// The actual App.tsx is located at /src/App.tsx
+// Entry point: /src/main.tsx imports from /src/App.tsx
+
+// If you're seeing this message in the console, check your import paths
+export default function DeletedApp() {
+  return null;
+}

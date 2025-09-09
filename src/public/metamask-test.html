@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetaMask Connection Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #0a0a0f;
+            color: #ffffff;
+        }
+        .container {
+            background: #1a1a24;
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        button {
+            background: #ffd700;
+            color: #0a0a0f;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-weight: bold;
+        }
+        button:hover {
+            opacity: 0.8;
+        }
+        .result {
+            background: #2a2a3a;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success { border-left: 4px solid #00ff88; }
+        .error { border-left: 4px solid #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 MetaMask Connection Test</h1>
+        <p>This is a minimal test to check if MetaMask is working at all.</p>
+        
+        <button onclick="basicTest()">🔥 Basic MetaMask Test</button>
+        <button onclick="checkEnvironment()">🔍 Check Environment</button>
+        <button onclick="forceConnection()">🚀 Force Connection</button>
+        
+        <div id="result" class="result">Click a button to start testing...</div>
+    </div>
+
+    <script>
+        function updateResult(message, isError = false) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = `result ${isError ? 'error' : 'success'}`;
+        }
+
+        function checkEnvironment() {
+            console.log('🔍 Environment Check...');
+            
+            const info = {
+                hasWindow: typeof window !== 'undefined',
+                hasEthereum: !!window.ethereum,
+                isMetaMask: !!window.ethereum?.isMetaMask,
+                userAgent: navigator.userAgent,
+                providersCount: window.ethereum?.providers?.length || 0,
+                providers: window.ethereum?.providers || []
+            };
+            
+            console.log('Environment info:', info);
+            updateResult(JSON.stringify(info, null, 2));
+        }
+
+        async function basicTest() {
+            updateResult('Testing MetaMask connection...');
+            console.log('🧪 Starting basic MetaMask test...');
+            
+            try {
+                // Check if MetaMask exists
+                if (!window.ethereum) {
+                    throw new Error('window.ethereum not found - MetaMask not installed');
+                }
+                
+                console.log('✅ window.ethereum found');
+                console.log('isMetaMask:', window.ethereum.isMetaMask);
+                
+                // Request accounts
+                console.log('📞 Requesting accounts...');
+                const accounts = await window.ethereum.request({
+                    method: 'eth_requestAccounts',
+                });
+                
+                console.log('✅ Success! Accounts:', accounts);
+                updateResult(`SUCCESS!\n\nConnected to ${accounts.length} accounts.\n\nFirst account: ${accounts[0]}\n\nShort: ${accounts[0]?.slice(0, 6)}...${accounts[0]?.slice(-4)}`);
+                
+            } catch (error) {
+                console.error('❌ Test failed:', error);
+                updateResult(`FAILED!\n\nError: ${error.message}\nCode: ${error.code || 'N/A'}\n\nCheck console for details.`, true);
+            }
+        }
+
+        function forceConnection() {
+            updateResult('Forcing MetaMask connection...');
+            console.log('🚀 Force connection attempt...');
+            
+            if (window.ethereum) {
+                // Direct call without async/await
+                window.ethereum.request({ method: 'eth_requestAccounts' })
+                    .then(accounts => {
+                        console.log('🚀 Force success:', accounts);
+                        updateResult(`FORCE SUCCESS!\n\nAccounts: ${accounts.length}\nFirst: ${accounts[0]}`);
+                    })
+                    .catch(error => {
+                        console.error('🚀 Force failed:', error);
+                        updateResult(`FORCE FAILED!\n\nError: ${error.message}\nCode: ${error.code}`, true);
+                    });
+            } else {
+                updateResult('FORCE FAILED!\n\nNo window.ethereum found', true);
+            }
+        }
+
+        // Auto-run environment check
+        setTimeout(checkEnvironment, 500);
+    </script>
+</body>
+</html>

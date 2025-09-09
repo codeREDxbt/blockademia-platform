@@ -1,0 +1,3 @@
+Root App.tsx file has been completely removed to fix import conflicts.
+The actual application is at /src/App.tsx and entry point is /src/main.tsx.
+Generated at: $(date)

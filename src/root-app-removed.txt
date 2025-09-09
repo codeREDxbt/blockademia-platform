@@ -1,0 +1,7 @@
+The conflicting root /App.tsx file has been removed to fix module resolution conflicts.
+The actual application is in /src/App.tsx and should be used via /src/main.tsx entry point.
+
+If you're still seeing a blank screen:
+1. Clear browser cache
+2. Check browser developer console for errors
+3. Ensure the development server has restarted

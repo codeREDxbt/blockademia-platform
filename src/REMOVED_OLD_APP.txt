@@ -1,0 +1,4 @@
+The old App.tsx file has been removed from the root directory.
+The correct App.tsx is located at /src/App.tsx
+
+This was causing deployment conflicts because there were two App.tsx files.
