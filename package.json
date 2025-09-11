@@ -38,14 +38,11 @@
           "cmdk": "^1.1.1",
           "embla-carousel-react": "^8.6.0",
           "ethers": "*",
-          "fs": "*",
           "input-otp": "^1.4.2",
-          "jsr:": "^supabase",
+          "@supabase/supabase-js": "^2.44.4",
+          "hono": "^4.5.1",
           "lucide-react": "^0.487.0",
           "motion": "*",
-          "npm:": "^supabase",
-          "npm:hono": "*",
-          "path": "*",
           "react": "^18.3.1",
           "react-day-picker": "^8.10.1",
           "react-dom": "^18.3.1",
@@ -64,7 +61,7 @@
           "vite": "6.3.5"
       },
       "scripts": {
-          "dev": "vite",
-          "build": "vite build"
+          "dev": "npx vite",
+          "build": "npx vite build"
       }
   }

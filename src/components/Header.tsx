@@ -31,22 +31,7 @@ export default function Header() {
   };
 
   const handleCoursesClick = () => {
-    if (location.pathname === '/') {
-      // If on home page, scroll to courses section
-      const coursesSection = document.querySelector('#courses');
-      if (coursesSection) {
-        coursesSection.scrollIntoView({ behavior: 'smooth' });
-      }
-    } else {
-      // If on other pages, navigate to home and then scroll
-      navigate('/', { replace: true });
-      setTimeout(() => {
-        const coursesSection = document.querySelector('#courses');
-        if (coursesSection) {
-          coursesSection.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 100);
-    }
+    navigate('/courses');
   };
 
   const handleDashboardClick = () => {

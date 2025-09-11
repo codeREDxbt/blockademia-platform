@@ -30,6 +30,7 @@ import CertificateManager from './components/CertificateManager';
 import EmailConfirmation from './components/EmailConfirmation';
 import SimpleMetaMaskTest from './components/SimpleMetaMaskTest';
 import EmailConfirmationDebugger from './components/EmailConfirmationDebugger';
+import CataloguePage from './components/CataloguePage'; // Import the new CataloguePage component
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { GameProvider } from './contexts/GameContext';
 import { Web3Provider } from './contexts/Web3Context';
@@ -64,6 +65,7 @@ function AppContent() {
       </div>
       <Routes>
         <Route path="/" element={<HomePage />} />
+        <Route path="/courses" element={<CataloguePage />} />
         <Route path="/course/:courseId" element={<CoursePreview />} />
         <Route path="/auth" element={<AuthPage />} />
         <Route path="/reset-password" element={<PasswordReset />} />
@@ -94,13 +96,16 @@ function AppContent() {
   );
 }
 
+import FullCourseCatalogue from './components/FullCourseCatalogue';
+
+// ... existing code ...
+
 // Home Page Component
 function HomePage() {
   return (
     <main>
       <Hero />
-      <ProgramsSection />
-      <CoursesSection />
+      <FullCourseCatalogue />
       <ProgressDashboard />
       <RewardsSection />
     </main>
@@ -139,7 +144,7 @@ export default function App() {
                   }}
                 />
               </div>
-            </Router>
+          </Router>
         </GameProvider>
       </Web3Provider>
     </AuthProvider>
