@@ -10,6 +10,7 @@ import BlockchainBackground from './components/BlockchainBackground';
 import FloatingObjects from './components/FloatingObjects';
 import CoursePreview from './components/CoursePreviewUpdated';
 import AuthPage from './components/AuthPage';
+import ProtectedRoute from './components/ProtectedRoute';
 import ProfileSetup from './components/ProfileSetup';
 import PasswordReset from './components/PasswordReset';
 import PasswordResetInfo from './components/PasswordResetInfo';
@@ -39,57 +40,6 @@ import { Toaster } from './components/ui/sonner';
 
 // Main App Content Component
 function AppContent() {
-  const { user, isLoading } = useAuth();
-
-  // Show loading while checking auth
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-muted-foreground">Loading...</p>
-          <div className="text-xs text-gray-500 mt-4">
-            <p><strong>Debug Info:</strong></p>
-            <p>isLoading: {JSON.stringify(isLoading)}</p>
-            <p>user: {JSON.stringify(user)}</p>
-            <p>Environment: {import.meta.env.MODE}</p>
-            <p>Supabase URL: {import.meta.env.VITE_SUPABASE_URL || 'Not set'}</p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Show profile setup for new users who haven't completed their profile
-  if (user && user.profile && !user.profile.profile_complete) {
-    return <ProfileSetup />;
-  }
-
-  // If not loading and no user, show auth page
-  if (!isLoading && !user) {
-    return (
-      <>
-        <Header />
-        <div className="container mx-auto px-4">
-          <DevelopmentBanner />
-        </div>
-        <Routes>
-          <Route path="/auth" element={<AuthPage />} />
-          <Route path="/confirm-email" element={<EmailConfirmation />} />
-          <Route path="/reset-password" element={<PasswordReset />} />
-          <Route path="/reset-password/info" element={<PasswordResetInfo />} />
-          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-          <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route path="/cookie-policy" element={<CookiePolicy />} />
-          <Route path="/about" element={<About />} />
-          {/* Redirect all other routes to auth */}
-          <Route path="*" element={<Navigate to="/auth" replace />} />
-        </Routes>
-        <Footer />
-      </>
-    );
-  }
-
   return (
     <>
       <Header />
@@ -97,30 +47,76 @@ function AppContent() {
         <DevelopmentBanner />
       </div>
       <Routes>
+        {/* Public routes - accessible without authentication */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/courses" element={<CataloguePage />} />
-        <Route path="/course/:courseId" element={<CoursePreview />} />
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/confirm-email" element={<EmailConfirmation />} />
         <Route path="/reset-password" element={<PasswordReset />} />
         <Route path="/reset-password/info" element={<PasswordResetInfo />} />
-        <Route path="/profile-setup" element={<ProfileSetup />} />
-        <Route path="/monad-setup" element={<MonadSetupGuide />} />
-        <Route path="/premium" element={<PremiumPurchase />} />
-        <Route path="/compliance" element={<ComplianceCheck />} />
-        <Route path="/educational-overview" element={<EducationalContentOverview />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/logo-download" element={<LogoDownloader />} />
-        <Route path="/quick-logo" element={<QuickLogo />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-service" element={<TermsOfService />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
-        <Route path="/certificates" element={<CertificateManager />} />
-        <Route path="/confirm-email" element={<EmailConfirmation />} />
-        <Route path="/metamask-test" element={<SimpleMetaMaskTest />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/educational-overview" element={<EducationalContentOverview />} />
+        
+        {/* Protected routes - require authentication */}
+        <Route path="/courses" element={
+          <ProtectedRoute>
+            <CataloguePage />
+          </ProtectedRoute>
+        } />
+        <Route path="/course/:courseId" element={
+          <ProtectedRoute>
+            <CoursePreview />
+          </ProtectedRoute>
+        } />
+        <Route path="/profile-setup" element={
+          <ProtectedRoute>
+            <ProfileSetup />
+          </ProtectedRoute>
+        } />
+        <Route path="/monad-setup" element={
+          <ProtectedRoute requireProfile={true}>
+            <MonadSetupGuide />
+          </ProtectedRoute>
+        } />
+        <Route path="/premium" element={
+          <ProtectedRoute requireProfile={true}>
+            <PremiumPurchase />
+          </ProtectedRoute>
+        } />
+        <Route path="/compliance" element={
+          <ProtectedRoute requireProfile={true}>
+            <ComplianceCheck />
+          </ProtectedRoute>
+        } />
+        <Route path="/certificates" element={
+          <ProtectedRoute requireProfile={true}>
+            <CertificateManager />
+          </ProtectedRoute>
+        } />
+        <Route path="/metamask-test" element={
+          <ProtectedRoute requireProfile={true}>
+            <SimpleMetaMaskTest />
+          </ProtectedRoute>
+        } />
+        
+        {/* Logo routes - require authentication */}
+        <Route path="/logo-download" element={
+          <ProtectedRoute>
+            <LogoDownloader />
+          </ProtectedRoute>
+        } />
+        <Route path="/quick-logo" element={
+          <ProtectedRoute>
+            <QuickLogo />
+          </ProtectedRoute>
+        } />
 
         {/* Handle legacy URLs and redirects */}
         <Route path="/preview_page.html" element={<Navigate to="/" replace />} />
         <Route path="/preview_page" element={<Navigate to="/" replace />} />
+        
         {/* Catch-all route for 404 */}
         <Route path="*" element={<NotFound />} />
       </Routes>
@@ -131,12 +127,19 @@ function AppContent() {
 
 // Home Page Component
 function HomePage() {
+  const { user } = useAuth();
+  
   return (
     <main>
       <Hero />
       <FullCourseCatalogue />
-      <ProgressDashboard />
-      <RewardsSection />
+      {/* Only show authenticated sections for logged in users */}
+      {user && (
+        <>
+          <ProgressDashboard />
+          <RewardsSection />
+        </>
+      )}
     </main>
   );
 }
