@@ -53,9 +53,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!mounted) return;
       
       setIsLoading(true);
+      console.log('AuthContext: Starting session fetch...');
+      
+      // Add timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        console.error('AuthContext: Session fetch timed out after 10 seconds');
+        if (mounted) {
+          setUser(null);
+          setSession(null);
+          setIsLoading(false);
+        }
+      }, 10000);
       
       try {
+        console.log('AuthContext: Calling supabase.auth.getSession()...');
         const { data: { session }, error } = await supabase.auth.getSession();
+        clearTimeout(timeoutId);
+
+        console.log('AuthContext: Session response received', { session: !!session, error: !!error });
 
         if (error) {
           console.error('Error getting session:', error.message);
@@ -64,12 +79,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setSession(null);
           }
         } else if (session && mounted) {
+          console.log('AuthContext: Session found, fetching user profile...');
           await fetchUserProfile(session.user, session);
         } else if (mounted) {
+          console.log('AuthContext: No session found');
           setUser(null);
           setSession(null);
         }
       } catch (error) {
+        clearTimeout(timeoutId);
         console.error('Session initialization error:', error);
         if (mounted) {
           setUser(null);
@@ -77,6 +95,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       } finally {
         if (mounted) {
+          console.log('AuthContext: Setting isLoading to false');
           setIsLoading(false);
         }
       }
@@ -117,6 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUserProfile = async (supabaseUser: SupabaseUser, session: Session) => {
     try {
+      console.log('AuthContext: Fetching user profile for user:', supabaseUser.id);
       // Try to fetch profile from profiles table
       const { data: profile, error } = await supabase
         .from('profiles')
@@ -128,6 +148,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.error('Error fetching profile:', error.message);
         // Don't fail completely, create a basic profile instead
       }
+
+      console.log('AuthContext: Profile data:', { profile: !!profile, error: !!error });
 
       // Create a basic profile if none exists or if there was an error
       const userProfile: UserProfile = profile || {
@@ -145,6 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile: userProfile,
       };
 
+      console.log('AuthContext: Setting user and session');
       setUser(fullUser);
       setSession(session);
     } catch (error) {
@@ -162,6 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile: fallbackProfile,
       };
 
+      console.log('AuthContext: Setting fallback user and session');
       setUser(fullUser);
       setSession(session);
     }
