@@ -69,6 +69,7 @@
       },
       "scripts": {
             "dev": "npx vite",
-            "build": "npx vite build"
+            "build": "npx vite build",
+            "preview": "npx vite preview"
       }
 }
