@@ -36,6 +36,7 @@ interface AuthContextType {
   updatePassword: (password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ success: boolean; message: string }>;
+  refreshSession: () => Promise<void>;
   isAuthenticated: boolean;
 }
 
@@ -302,6 +303,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshSession = async () => {
+    console.log('AuthContext: Manually refreshing session...');
+    setIsLoading(true);
+    
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error('Manual session refresh error:', error.message);
+        setUser(null);
+        setSession(null);
+      } else if (session) {
+        console.log('Manual session refresh successful');
+        await fetchUserProfile(session.user, session);
+      } else {
+        console.log('Manual session refresh: no session found');
+        setUser(null);
+        setSession(null);
+      }
+    } catch (error) {
+      console.error('Manual session refresh failed:', error);
+      setUser(null);
+      setSession(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const updateProfile = async (updates: Partial<UserProfile>) => {
     if (!user) {
       return { success: false, message: 'You must be logged in to update your profile.' };
@@ -335,6 +364,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updatePassword,
     logout,
     updateProfile,
+    refreshSession,
     isAuthenticated: !!user,
   };
 

@@ -20,20 +20,52 @@ export default function AuthPage() {
 	const [showEmailConfirmation, setShowEmailConfirmation] = useState(false);
 	const [userEmail, setUserEmail] = useState('');
 	const navigate = useNavigate();
-	const { login, signup, socialLogin, resendConfirmation, user, isLoading } = useAuth();
+	const { login, signup, socialLogin, resendConfirmation, user, isLoading, refreshSession } = useAuth();
 
 	// Handle OAuth callback and authentication redirects
 	useEffect(() => {
 		const urlParams = new URLSearchParams(window.location.search);
-		const accessToken = urlParams.get('access_token');
-		const error = urlParams.get('error');
+		const hash = window.location.hash;
+		const accessToken = urlParams.get('access_token') || (hash.includes('access_token') ? new URLSearchParams(hash.substring(1)).get('access_token') : null);
+		const error = urlParams.get('error') || (hash.includes('error') ? new URLSearchParams(hash.substring(1)).get('error') : null);
+		const code = urlParams.get('code');
+		
+		console.log('AuthPage: OAuth callback check', {
+			search: window.location.search,
+			hash: window.location.hash,
+			accessToken: !!accessToken,
+			error: !!error,
+			code: !!code
+		});
 		
 		if (error) {
 			console.error('OAuth error:', error);
 			setError('Authentication failed. Please try again.');
-		} else if (accessToken) {
-			console.log('OAuth callback detected with access token');
-			// Let the auth context handle the session
+		} else if (accessToken || code) {
+			console.log('OAuth callback detected, waiting for session establishment...');
+			setSuccess('Authenticating with Google...');
+			
+			// Give Supabase time to process the OAuth callback
+			setTimeout(async () => {
+				// Check if user is now authenticated
+				if (!user && !isLoading) {
+					console.warn('OAuth callback completed but no user session found, trying manual refresh...');
+					try {
+						await refreshSession();
+						// Give it another moment to process
+						setTimeout(() => {
+							if (!user) {
+								setError('Authentication completed but session failed to establish. Please try logging in again.');
+								setSuccess('');
+							}
+						}, 2000);
+					} catch (error) {
+						console.error('Manual session refresh failed:', error);
+						setError('Authentication failed. Please try again.');
+						setSuccess('');
+					}
+				}
+			}, 3000);
 		}
 	}, []);
 
@@ -184,7 +216,28 @@ export default function AuthPage() {
 							</CardHeader>
 							<CardContent className="space-y-6">
 								{error && !showEmailConfirmation && (
-									<div className="p-3 bg-red-100 border border-red-200 rounded text-red-700 text-sm text-center">{error}</div>
+									<div className="p-3 bg-red-100 border border-red-200 rounded text-red-700 text-sm text-center space-y-2">
+										<div>{error}</div>
+										{error.includes('session failed') && (
+											<Button 
+												onClick={async () => {
+													setError('');
+													setSuccess('Retrying authentication...');
+													try {
+														await refreshSession();
+													} catch (err) {
+														setError('Retry failed. Please try logging in again.');
+														setSuccess('');
+													}
+												}}
+												size="sm"
+												variant="outline"
+												className="mt-2"
+											>
+												Retry Authentication
+											</Button>
+										)}
+									</div>
 								)}
 								{success && !showEmailConfirmation && (
 									<div className="p-3 bg-green-100 border border-green-200 rounded text-green-700 text-sm text-center">{success}</div>
