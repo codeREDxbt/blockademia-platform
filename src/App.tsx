@@ -65,6 +65,31 @@ function AppContent() {
     return <ProfileSetup />;
   }
 
+  // If not loading and no user, show auth page
+  if (!isLoading && !user) {
+    return (
+      <>
+        <Header />
+        <div className="container mx-auto px-4">
+          <DevelopmentBanner />
+        </div>
+        <Routes>
+          <Route path="/auth" element={<AuthPage />} />
+          <Route path="/confirm-email" element={<EmailConfirmation />} />
+          <Route path="/reset-password" element={<PasswordReset />} />
+          <Route path="/reset-password/info" element={<PasswordResetInfo />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/cookie-policy" element={<CookiePolicy />} />
+          <Route path="/about" element={<About />} />
+          {/* Redirect all other routes to auth */}
+          <Route path="*" element={<Navigate to="/auth" replace />} />
+        </Routes>
+        <Footer />
+      </>
+    );
+  }
+
   return (
     <>
       <Header />
