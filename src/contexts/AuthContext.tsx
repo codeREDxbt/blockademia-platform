@@ -137,12 +137,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchUserProfile = async (supabaseUser: SupabaseUser, session: Session) => {
     try {
       console.log('AuthContext: Fetching user profile for user:', supabaseUser.id);
-      // Try to fetch profile from profiles table
-      const { data: profile, error } = await supabase
+      
+      // Add timeout for profile fetch
+      const profileTimeout = new Promise<{ data: any; error: any }>((_, reject) => 
+        setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+      );
+      
+      const profileQuery = supabase
         .from('profiles')
         .select('*')
         .eq('id', supabaseUser.id)
         .single();
+      
+      // Race between profile fetch and timeout
+      let profile = null;
+      let error = null;
+      
+      try {
+        const result = await Promise.race([profileQuery, profileTimeout]);
+        profile = result.data;
+        error = result.error;
+      } catch (timeoutError) {
+        console.warn('Profile fetch failed or timed out:', timeoutError.message);
+        error = timeoutError;
+      }
 
       if (error && error.code !== 'PGRST116') { // PGRST116: row not found
         console.error('Error fetching profile:', error.message);
