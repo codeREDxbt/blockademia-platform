@@ -30,7 +30,8 @@ import CertificateManager from './components/CertificateManager';
 import EmailConfirmation from './components/EmailConfirmation';
 import SimpleMetaMaskTest from './components/SimpleMetaMaskTest';
 import EmailConfirmationDebugger from './components/EmailConfirmationDebugger';
-import CataloguePage from './components/CataloguePage'; // Import the new CataloguePage component
+import CataloguePage from './components/CataloguePage';
+import FullCourseCatalogue from './components/FullCourseCatalogue';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { GameProvider } from './contexts/GameContext';
 import { Web3Provider } from './contexts/Web3Context';
@@ -47,13 +48,20 @@ function AppContent() {
         <div className="text-center space-y-4">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="text-muted-foreground">Loading...</p>
+          {/* Debug info for production */}
+          {import.meta.env.DEV && (
+            <div className="text-xs text-gray-500 mt-4">
+              <p>Environment: {import.meta.env.MODE}</p>
+              <p>Supabase URL: {import.meta.env.VITE_SUPABASE_URL || 'Not set'}</p>
+            </div>
+          )}
         </div>
       </div>
     );
   }
 
   // Show profile setup for new users who haven't completed their profile
-  if (user && !user.profileComplete) {
+  if (user && user.profile && !user.profile.profile_complete) {
     return <ProfileSetup />;
   }
 
@@ -96,10 +104,6 @@ function AppContent() {
   );
 }
 
-import FullCourseCatalogue from './components/FullCourseCatalogue';
-
-// ... existing code ...
-
 // Home Page Component
 function HomePage() {
   return (
@@ -118,32 +122,32 @@ export default function App() {
       <Web3Provider>
         <GameProvider>
           <Router>
-              <ScrollToTop />
-              <div className="min-h-screen bg-background text-foreground relative">
-                {/* Blockchain-inspired background */}
-                <BlockchainBackground />
-                
-                {/* Floating animated objects */}
-                <FloatingObjects />
-                
-                {/* Main content with higher z-index */}
-                <div className="relative z-10">
-                  <AppContent />
-                </div>
-                
-                {/* Toast notifications */}
-                <Toaster 
-                  position="bottom-right"
-                  theme="dark"
-                  toastOptions={{
-                    style: {
-                      background: 'var(--card)',
-                      border: '1px solid var(--border)',
-                      color: 'var(--foreground)',
-                    },
-                  }}
-                />
+            <ScrollToTop />
+            <div className="min-h-screen bg-background text-foreground relative">
+              {/* Blockchain-inspired background */}
+              <BlockchainBackground />
+              
+              {/* Floating animated objects */}
+              <FloatingObjects />
+              
+              {/* Main content with higher z-index */}
+              <div className="relative z-10">
+                <AppContent />
               </div>
+              
+              {/* Toast notifications */}
+              <Toaster 
+                position="bottom-right"
+                theme="dark"
+                toastOptions={{
+                  style: {
+                    background: 'var(--card)',
+                    border: '1px solid var(--border)',
+                    color: 'var(--foreground)',
+                  },
+                }}
+              />
+            </div>
           </Router>
         </GameProvider>
       </Web3Provider>
