@@ -33,6 +33,7 @@ import SimpleMetaMaskTest from './components/SimpleMetaMaskTest';
 import EmailConfirmationDebugger from './components/EmailConfirmationDebugger';
 import CataloguePage from './components/CataloguePage';
 import FullCourseCatalogue from './components/FullCourseCatalogue';
+import AuthDebugger from './components/AuthDebugger';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { GameProvider } from './contexts/GameContext';
 import { Web3Provider } from './contexts/Web3Context';
@@ -42,6 +43,7 @@ import { Toaster } from './components/ui/sonner';
 function AppContent() {
   return (
     <>
+      <AuthDebugger />
       <Header />
       <div className="container mx-auto px-4">
         <DevelopmentBanner />

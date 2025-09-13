@@ -11,6 +11,15 @@ export default function ProtectedRoute({ children, requireProfile = false }: Pro
   const { user, isLoading } = useAuth();
   const location = useLocation();
 
+  console.log('ProtectedRoute:', {
+    isLoading,
+    user: !!user,
+    userEmail: user?.email,
+    requireProfile,
+    profileComplete: user?.profile?.profile_complete,
+    currentPath: location.pathname
+  });
+
   // Show loading while checking authentication
   if (isLoading) {
     return (

@@ -23,7 +23,16 @@ export default function AuthPage() {
 	const { login, signup, socialLogin, resendConfirmation, user, isLoading } = useAuth();
 
 	useEffect(() => {
+		console.log('AuthPage: Auth state changed', { 
+			isLoading, 
+			user: !!user, 
+			userEmail: user?.email,
+			profileComplete: user?.profile?.profile_complete,
+			currentPath: window.location.pathname 
+		});
+		
 		if (!isLoading && user) {
+			console.log('AuthPage: User authenticated, navigating to home');
 			navigate('/');
 		}
 	}, [user, isLoading, navigate]);
