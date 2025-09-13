@@ -2,6 +2,7 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { OAuthHandler } from '../utils/OAuthHandler';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -22,51 +23,35 @@ export default function AuthPage() {
 	const navigate = useNavigate();
 	const { login, signup, socialLogin, resendConfirmation, user, isLoading, refreshSession } = useAuth();
 
-	// Handle OAuth callback and authentication redirects
+	// Handle OAuth callback with new handler
 	useEffect(() => {
-		const urlParams = new URLSearchParams(window.location.search);
-		const hash = window.location.hash;
-		const accessToken = urlParams.get('access_token') || (hash.includes('access_token') ? new URLSearchParams(hash.substring(1)).get('access_token') : null);
-		const error = urlParams.get('error') || (hash.includes('error') ? new URLSearchParams(hash.substring(1)).get('error') : null);
-		const code = urlParams.get('code');
-		
-		console.log('AuthPage: OAuth callback check', {
-			search: window.location.search,
-			hash: window.location.hash,
-			accessToken: !!accessToken,
-			error: !!error,
-			code: !!code
-		});
-		
-		if (error) {
-			console.error('OAuth error:', error);
-			setError('Authentication failed. Please try again.');
-		} else if (accessToken || code) {
-			console.log('OAuth callback detected, waiting for session establishment...');
-			setSuccess('Authenticating with Google...');
-			
-			// Give Supabase time to process the OAuth callback
-			setTimeout(async () => {
-				// Check if user is now authenticated
-				if (!user && !isLoading) {
-					console.warn('OAuth callback completed but no user session found, trying manual refresh...');
-					try {
-						await refreshSession();
-						// Give it another moment to process
-						setTimeout(() => {
-							if (!user) {
-								setError('Authentication completed but session failed to establish. Please try logging in again.');
-								setSuccess('');
-							}
-						}, 2000);
-					} catch (error) {
-						console.error('Manual session refresh failed:', error);
-						setError('Authentication failed. Please try again.');
-						setSuccess('');
-					}
+		const handleOAuthCallback = async () => {
+			if (OAuthHandler.isOAuthCallback()) {
+				console.log('AuthPage: OAuth callback detected, processing...');
+				setSuccess('Processing Google authentication...');
+				setError('');
+				
+				const result = await OAuthHandler.handleCallback();
+				
+				if (result.success) {
+					console.log('AuthPage: OAuth callback successful');
+					setSuccess('Authentication successful! Redirecting...');
+					// Give the auth context a moment to update
+					setTimeout(() => {
+						if (!user) {
+							// Force a session refresh
+							refreshSession();
+						}
+					}, 1000);
+				} else {
+					console.error('AuthPage: OAuth callback failed:', result.error);
+					setError(result.error || 'OAuth authentication failed');
+					setSuccess('');
 				}
-			}, 3000);
-		}
+			}
+		};
+		
+		handleOAuthCallback();
 	}, []);
 
 	useEffect(() => {
