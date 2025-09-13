@@ -48,13 +48,13 @@ function AppContent() {
         <div className="text-center space-y-4">
           <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
           <p className="text-muted-foreground">Loading...</p>
-          {/* Debug info for production */}
-          {import.meta.env.DEV && (
-            <div className="text-xs text-gray-500 mt-4">
-              <p>Environment: {import.meta.env.MODE}</p>
-              <p>Supabase URL: {import.meta.env.VITE_SUPABASE_URL || 'Not set'}</p>
-            </div>
-          )}
+          <div className="text-xs text-gray-500 mt-4">
+            <p><strong>Debug Info:</strong></p>
+            <p>isLoading: {JSON.stringify(isLoading)}</p>
+            <p>user: {JSON.stringify(user)}</p>
+            <p>Environment: {import.meta.env.MODE}</p>
+            <p>Supabase URL: {import.meta.env.VITE_SUPABASE_URL || 'Not set'}</p>
+          </div>
         </div>
       </div>
     );
