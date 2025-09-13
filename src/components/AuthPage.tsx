@@ -22,17 +22,35 @@ export default function AuthPage() {
 	const navigate = useNavigate();
 	const { login, signup, socialLogin, resendConfirmation, user, isLoading } = useAuth();
 
+	// Handle OAuth callback and authentication redirects
+	useEffect(() => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const accessToken = urlParams.get('access_token');
+		const error = urlParams.get('error');
+		
+		if (error) {
+			console.error('OAuth error:', error);
+			setError('Authentication failed. Please try again.');
+		} else if (accessToken) {
+			console.log('OAuth callback detected with access token');
+			// Let the auth context handle the session
+		}
+	}, []);
+
 	useEffect(() => {
 		console.log('AuthPage: Auth state changed', { 
 			isLoading, 
 			user: !!user, 
 			userEmail: user?.email,
 			profileComplete: user?.profile?.profile_complete,
-			currentPath: window.location.pathname 
+			currentPath: window.location.pathname,
+			searchParams: window.location.search
 		});
 		
 		if (!isLoading && user) {
 			console.log('AuthPage: User authenticated, navigating to home');
+			// Clear any URL parameters before navigating
+			window.history.replaceState({}, document.title, '/auth');
 			navigate('/');
 		}
 	}, [user, isLoading, navigate]);

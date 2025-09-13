@@ -49,16 +49,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let mounted = true;
 
-    const getActiveSession = async () => {
+    const getActiveSession = async (retryCount = 0) => {
       if (!mounted) return;
       
       setIsLoading(true);
-      console.log('AuthContext: Starting session fetch...');
+      console.log('AuthContext: Starting session fetch... (attempt', retryCount + 1, ')');
       
       // Add timeout to prevent infinite loading
       const timeoutId = setTimeout(() => {
         console.error('AuthContext: Session fetch timed out after 10 seconds');
-        if (mounted) {
+        if (mounted && retryCount < 2) {
+          // Retry up to 3 times for OAuth callbacks
+          console.log('AuthContext: Retrying session fetch...');
+          getActiveSession(retryCount + 1);
+        } else if (mounted) {
           setUser(null);
           setSession(null);
           setIsLoading(false);
@@ -106,16 +110,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
       
+      console.log('AuthContext: Auth state change event:', event, 'Session exists:', !!session);
       setIsLoading(true);
       
       try {
         if (event === 'SIGNED_IN' && session) {
+          console.log('AuthContext: SIGNED_IN event, fetching profile...');
           await fetchUserProfile(session.user, session);
         } else if (event === 'SIGNED_OUT') {
+          console.log('AuthContext: SIGNED_OUT event');
           setUser(null);
           setSession(null);
         } else if (event === 'USER_UPDATED' && session) {
+          console.log('AuthContext: USER_UPDATED event');
           await fetchUserProfile(session.user, session);
+        } else if (event === 'TOKEN_REFRESHED' && session) {
+          console.log('AuthContext: TOKEN_REFRESHED event');
+          await fetchUserProfile(session.user, session);
+        } else {
+          console.log('AuthContext: Other event:', event);
         }
       } catch (error) {
         console.error('Auth state change error:', error);
