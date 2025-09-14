@@ -254,10 +254,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const socialLogin = async (provider: 'google' | 'github') => {
     try {
-      // Get the current origin for redirect
-      const redirectTo = `${window.location.origin}/auth`;
+      // Determine the correct redirect URL based on environment
+      const origin = window.location.origin;
+      const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1');
+      const isNetlify = origin.includes('netlify.app');
+      const isVercel = origin.includes('vercel.app');
       
-      const { error } = await supabase.auth.signInWithOAuth({
+      // Use the exact current origin for redirect
+      let redirectTo = `${origin}/auth`;
+      
+      console.log('Social login attempt:', {
+        provider,
+        origin,
+        redirectTo,
+        environment: { isLocalhost, isNetlify, isVercel }
+      });
+      
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo,
@@ -265,11 +278,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             access_type: 'offline',
             prompt: 'consent',
           },
+          skipBrowserRedirect: false,
         },
       });
 
+      console.log('OAuth response:', { data, error });
+
       if (error) {
-        console.error('Social login error:', error.message);
+        console.error('Social login error:', error);
+        // Provide more specific error messages
+        if (error.message.includes('invalid')) {
+          throw new Error(`OAuth configuration error: ${error.message}. Please check your Supabase OAuth settings.`);
+        }
         throw error;
       }
     } catch (error) {

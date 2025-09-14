@@ -6,6 +6,37 @@ const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1N
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export class OAuthHandler {
+  static validateConfiguration(): { isValid: boolean; issues: string[] } {
+    const issues: string[] = [];
+    
+    // Check Supabase URL
+    if (!supabaseUrl || supabaseUrl === 'your-supabase-url') {
+      issues.push('Supabase URL is not configured');
+    }
+    
+    // Check Supabase key
+    if (!supabaseKey || supabaseKey === 'your-supabase-anon-key') {
+      issues.push('Supabase anonymous key is not configured');
+    }
+    
+    // Check current domain
+    const currentDomain = window.location.origin;
+    console.log('Current domain for OAuth:', currentDomain);
+    
+    // Common redirect URL patterns that should be configured in Supabase
+    const expectedRedirectUrls = [
+      `${currentDomain}/auth`,
+      `${currentDomain}/`,
+    ];
+    
+    console.log('Expected redirect URLs to configure in Supabase:', expectedRedirectUrls);
+    
+    return {
+      isValid: issues.length === 0,
+      issues
+    };
+  }
+
   static async handleCallback(): Promise<{ success: boolean; error?: string }> {
     try {
       console.log('OAuthHandler: Starting callback processing...');
@@ -34,6 +65,13 @@ export class OAuthHandler {
       
       if (error) {
         console.error('OAuth error from URL:', error);
+        // Provide more specific error messages
+        if (error.includes('invalid')) {
+          return { 
+            success: false, 
+            error: `OAuth configuration error: ${error}. This usually means the redirect URL in Supabase doesn't match the current domain. Please check your Supabase OAuth settings.` 
+          };
+        }
         return { success: false, error: `OAuth error: ${error}` };
       }
       
@@ -48,7 +86,14 @@ export class OAuthHandler {
         
         if (sessionError) {
           console.error('Failed to set session:', sessionError);
-          return { success: false, error: sessionError.message };
+          // Provide more specific error messages for common issues
+          if (sessionError.message.includes('invalid')) {
+            return { 
+              success: false, 
+              error: `Session creation failed: ${sessionError.message}. This may be due to an invalid access token or expired session.` 
+            };
+          }
+          return { success: false, error: `Session error: ${sessionError.message}` };
         }
         
         if (data.session) {

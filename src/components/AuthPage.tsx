@@ -26,6 +26,14 @@ export default function AuthPage() {
 	// Handle OAuth callback with new handler
 	useEffect(() => {
 		const handleOAuthCallback = async () => {
+			// First validate OAuth configuration
+			const configValidation = OAuthHandler.validateConfiguration();
+			if (!configValidation.isValid) {
+				console.warn('OAuth configuration issues:', configValidation.issues);
+				setError(`OAuth setup issues: ${configValidation.issues.join(', ')}`);
+				return;
+			}
+			
 			if (OAuthHandler.isOAuthCallback()) {
 				console.log('AuthPage: OAuth callback detected, processing...');
 				setSuccess('Processing Google authentication...');
