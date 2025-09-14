@@ -34,6 +34,7 @@ import EmailConfirmationDebugger from './components/EmailConfirmationDebugger';
 import CataloguePage from './components/CataloguePage';
 import FullCourseCatalogue from './components/FullCourseCatalogue';
 import AuthDebugger from './components/AuthDebugger';
+import OAuthDiagnostic from './components/OAuthDiagnostic';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { GameProvider } from './contexts/GameContext';
 import { Web3Provider } from './contexts/Web3Context';
@@ -44,6 +45,7 @@ function AppContent() {
   return (
     <>
       <AuthDebugger />
+      <OAuthDiagnostic />
       <Header />
       <div className="container mx-auto px-4">
         <DevelopmentBanner />

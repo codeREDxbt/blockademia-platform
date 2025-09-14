@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { OAuthHandler } from '../utils/OAuthHandler';
+import { DirectOAuth } from '../utils/DirectOAuth';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -87,6 +88,41 @@ export default function AuthPage() {
 			await socialLogin(provider);
 		} catch (error: any) {
 			setError(error.message || `${provider.charAt(0).toUpperCase() + provider.slice(1)} login failed.`);
+		} finally {
+			setFormLoading(false);
+		}
+	};
+
+	const handleDirectOAuth = async () => {
+		try {
+			setFormLoading(true);
+			setError('');
+			setSuccess('Starting direct Google authentication...');
+			await DirectOAuth.initiateGoogleAuth();
+		} catch (error: any) {
+			setError(error.message || 'Direct Google login failed.');
+			setSuccess('');
+		} finally {
+			setFormLoading(false);
+		}
+	};
+
+	const handleTestAuth = async () => {
+		try {
+			setFormLoading(true);
+			setError('');
+			setSuccess('Creating test authentication...');
+			const result = await DirectOAuth.createTestUser();
+			if (result.success) {
+				setSuccess('Test authentication successful! Redirecting...');
+				setTimeout(() => navigate('/'), 2000);
+			} else {
+				setError(result.error || 'Test authentication failed');
+				setSuccess('');
+			}
+		} catch (error: any) {
+			setError(error.message || 'Test authentication failed.');
+			setSuccess('');
 		} finally {
 			setFormLoading(false);
 		}
@@ -307,6 +343,17 @@ export default function AuthPage() {
 										</Button>
 										<Button variant="outline" className="w-full" onClick={() => handleSocialLogin('google')} disabled={formLoading}>
 											<Chrome className="w-4 h-4 mr-2" /> Google
+										</Button>
+									</div>
+									
+									{/* Alternative OAuth methods for debugging */}
+									<div className="space-y-2 pt-4 border-t">
+										<p className="text-xs text-muted-foreground text-center">Alternative Methods (Debug)</p>
+										<Button variant="outline" className="w-full" onClick={handleDirectOAuth} disabled={formLoading}>
+											<Chrome className="w-4 h-4 mr-2" /> Direct Google OAuth
+										</Button>
+										<Button variant="outline" className="w-full bg-yellow-50 hover:bg-yellow-100" onClick={handleTestAuth} disabled={formLoading}>
+											🔧 Test Authentication (Debug)
 										</Button>
 									</div>
 								</div>
