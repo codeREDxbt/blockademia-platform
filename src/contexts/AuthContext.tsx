@@ -56,19 +56,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setIsLoading(true);
       console.log('AuthContext: Starting session fetch... (attempt', retryCount + 1, ')');
       
-      // Add timeout to prevent infinite loading
+      // Shorter timeout to prevent long hanging
       const timeoutId = setTimeout(() => {
-        console.error('AuthContext: Session fetch timed out after 10 seconds');
-        if (mounted && retryCount < 2) {
-          // Retry up to 3 times for OAuth callbacks
+        console.error('AuthContext: Session fetch timed out after 3 seconds');
+        if (mounted && retryCount < 1) {
+          // Only retry once
           console.log('AuthContext: Retrying session fetch...');
           getActiveSession(retryCount + 1);
         } else if (mounted) {
+          console.log('AuthContext: Giving up on session fetch, setting to no auth');
           setUser(null);
           setSession(null);
           setIsLoading(false);
         }
-      }, 10000);
+      }, 3000); // Reduced from 10 seconds to 3 seconds
       
       try {
         console.log('AuthContext: Calling supabase.auth.getSession()...');
@@ -202,6 +203,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('AuthContext: Setting user and session');
       setUser(fullUser);
       setSession(session);
+      setIsLoading(false); // Ensure loading is set to false after successful profile fetch
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
       
@@ -220,6 +222,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       console.log('AuthContext: Setting fallback user and session');
       setUser(fullUser);
       setSession(session);
+      setIsLoading(false); // Ensure loading is set to false even with fallback profile
     }
   };
 
