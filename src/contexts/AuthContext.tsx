@@ -169,8 +169,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
+    console.log('AuthContext: Login attempt with email:', email);
+    
     // Check for demo credentials
     if (email === 'demo@blockademia.com' && password === 'demo123') {
+      console.log('AuthContext: Demo login detected, creating mock user...');
+      
       // Create a mock demo user
       const demoUser: User = {
         id: 'demo-user-id',
@@ -207,17 +211,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: demoUser
       } as Session;
 
+      console.log('AuthContext: Setting demo user and session...', { demoUser, demoSession });
       setUser(demoUser);
       setSession(demoSession);
       
+      console.log('AuthContext: Demo login successful');
       return { success: true, message: 'Demo login successful! Welcome to Blockademia.' };
     }
 
+    console.log('AuthContext: Regular Supabase login for:', email);
     // Regular Supabase authentication for non-demo users
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
+      console.log('AuthContext: Supabase login error:', error.message);
       return { success: false, message: error.message };
     }
+    console.log('AuthContext: Supabase login successful');
     return { success: true, message: 'Logged in successfully.' };
   };
 

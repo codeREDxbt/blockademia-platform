@@ -60,11 +60,22 @@ export default function AuthPage() {
     const password = formData.get('password') as string;
 
     try {
-      const success = await login(email, password);
-      if (success) {
-        navigate('/');
+      console.log('AuthPage: Attempting login with email:', email);
+      const result = await login(email, password);
+      console.log('AuthPage: Login result:', result);
+      
+      if (result.success) {
+        console.log('AuthPage: Login successful, setting success message and navigating...');
+        setSuccess(result.message);
+        
+        // Add a small delay to ensure state is updated
+        setTimeout(() => {
+          console.log('AuthPage: Navigating to home page...');
+          navigate('/');
+        }, 100);
       } else {
-        setError('Invalid credentials. Please try again.');
+        console.log('AuthPage: Login failed:', result.message);
+        setError(result.message || 'Invalid credentials. Please try again.');
       }
     } catch (err: any) {
       console.error('Sign in error:', err);
