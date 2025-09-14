@@ -127,14 +127,17 @@ function AppContent() {
 
 // Home Page Component
 function HomePage() {
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
   
+  // Do not render authenticated sections if user data is not fully loaded
+  const showAuthenticatedSections = user && user.email && !isLoading;
+
   return (
     <main>
       <Hero />
       <FullCourseCatalogue />
-      {/* Only show authenticated sections for logged in users */}
-      {user && (
+      {/* Only show authenticated sections for logged in users with complete data */}
+      {showAuthenticatedSections && (
         <>
           <ProgressDashboard />
           <RewardsSection />
