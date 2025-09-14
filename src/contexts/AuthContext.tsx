@@ -36,6 +36,7 @@ interface AuthContextType {
   updatePassword: (password: string) => Promise<{ success: boolean; message: string }>;
   logout: () => Promise<void>;
   updateProfile: (updates: Partial<UserProfile>) => Promise<{ success: boolean; message: string }>;
+  resendConfirmation: (email: string) => Promise<{ success: boolean; message: string }>;
   isAuthenticated: boolean;
 }
 
@@ -168,6 +169,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
+    // Check for demo credentials
+    if (email === 'demo@blockademia.com' && password === 'demo123') {
+      // Create a mock demo user
+      const demoUser: User = {
+        id: 'demo-user-id',
+        email: 'demo@blockademia.com',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        aud: 'authenticated',
+        role: 'authenticated',
+        email_confirmed_at: new Date().toISOString(),
+        user_metadata: {
+          name: 'Demo User',
+          avatar_url: 'https://api.dicebear.com/6.x/initials/svg?seed=Demo+User'
+        },
+        app_metadata: {},
+        profile: {
+          id: 'demo-user-id',
+          name: 'Demo User',
+          avatar_url: 'https://api.dicebear.com/6.x/initials/svg?seed=Demo+User',
+          profile_complete: true,
+          bio: 'Demo user for testing Blockademia platform',
+          location: 'Demo Location',
+          skills: ['Blockchain', 'Smart Contracts', 'DeFi'],
+          learning_goals: ['Master Solidity', 'Build DApps', 'Understand Web3']
+        }
+      };
+
+      // Create a mock session
+      const demoSession = {
+        access_token: 'demo-access-token',
+        refresh_token: 'demo-refresh-token',
+        expires_in: 3600,
+        expires_at: Math.floor(Date.now() / 1000) + 3600,
+        token_type: 'bearer',
+        user: demoUser
+      } as Session;
+
+      setUser(demoUser);
+      setSession(demoSession);
+      
+      return { success: true, message: 'Demo login successful! Welcome to Blockademia.' };
+    }
+
+    // Regular Supabase authentication for non-demo users
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) {
       return { success: false, message: error.message };
@@ -241,6 +287,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
+    // Handle demo user logout
+    if (user?.id === 'demo-user-id') {
+      setUser(null);
+      setSession(null);
+      return;
+    }
+
+    // Regular Supabase logout for non-demo users
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error('Error logging out:', error.message);
@@ -269,6 +323,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { success: true, message: 'Profile updated successfully.' };
   };
 
+  const resendConfirmation = async (email: string) => {
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: email
+    });
+
+    if (error) {
+      return { success: false, message: error.message };
+    }
+
+    return { success: true, message: 'Confirmation email sent successfully.' };
+  };
+
   const value = {
     user,
     session,
@@ -280,6 +347,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     updatePassword,
     logout,
     updateProfile,
+    resendConfirmation,
     isAuthenticated: !!user,
   };
 
