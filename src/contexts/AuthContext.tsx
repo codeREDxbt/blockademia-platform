@@ -46,12 +46,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDemoMode, setIsDemoMode] = useState(false);
 
   useEffect(() => {
     let mounted = true;
 
     const getActiveSession = async () => {
       if (!mounted) return;
+      
+      // Skip session initialization if in demo mode
+      if (isDemoMode) {
+        console.log('AuthContext: In demo mode, skipping session initialization');
+        setIsLoading(false);
+        return;
+      }
       
       setIsLoading(true);
       
@@ -88,6 +96,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
       
+      // Skip ALL Supabase auth state changes when in demo mode
+      if (isDemoMode) {
+        console.log('AuthContext: Ignoring Supabase auth state change - in demo mode');
+        return;
+      }
+      
       // Skip Supabase auth state changes for demo users
       if (session?.user?.id === 'demo-user-id') {
         console.log('AuthContext: Skipping auth state change for demo user');
@@ -120,9 +134,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       mounted = false;
       authListener?.subscription?.unsubscribe();
     };
-  }, []);
+  }, [isDemoMode]);
 
   const fetchUserProfile = async (supabaseUser: SupabaseUser, session: Session) => {
+    // Never fetch user profile for demo mode
+    if (isDemoMode) {
+      console.log('AuthContext: Skipping fetchUserProfile - in demo mode');
+      return;
+    }
+    
     // Skip profile fetching for demo users - they already have complete profiles
     if (supabaseUser.id === 'demo-user-id') {
       console.log('AuthContext: Skipping profile fetch for demo user');
@@ -183,11 +203,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = async (email: string, password: string) => {
     console.log('AuthContext: Login attempt with email:', email);
     
-    // Check for demo credentials
+    // Check for demo credentials - handle immediately
     if (email === 'demo@blockademia.com' && password === 'demo123') {
-      console.log('AuthContext: Demo login detected, creating mock user...');
+      console.log('AuthContext: Demo login detected, setting up demo state...');
       
-      // Create a mock demo user
+      // Create a mock demo user with complete profile
       const demoUser: User = {
         id: 'demo-user-id',
         email: 'demo@blockademia.com',
@@ -213,7 +233,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       };
 
-      // Create a mock session (not a real Supabase session)
+      // Create a mock session
       const demoSession = {
         access_token: 'demo-access-token',
         refresh_token: 'demo-refresh-token',
@@ -223,24 +243,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user: demoUser
       };
 
-      console.log('AuthContext: Setting demo user and session...', { demoUser });
+      // Set state immediately and synchronously
+      setIsDemoMode(true);
       setUser(demoUser);
       setSession(demoSession as Session);
-      setIsLoading(false); // Explicitly set loading to false for demo users
+      setIsLoading(false);
       
-      console.log('AuthContext: Demo login successful');
+      console.log('AuthContext: Demo login completed successfully');
       return { success: true, message: 'Demo login successful! Welcome to Blockademia.' };
     }
 
-    console.log('AuthContext: Regular Supabase login for:', email);
-    // Regular Supabase authentication for non-demo users
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) {
-      console.log('AuthContext: Supabase login error:', error.message);
-      return { success: false, message: error.message };
+    // Handle regular Supabase authentication for non-demo users
+    console.log('AuthContext: Processing regular Supabase login for:', email);
+    setIsLoading(true);
+    
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) {
+        console.log('AuthContext: Supabase login error:', error.message);
+        setIsLoading(false);
+        return { success: false, message: error.message };
+      }
+      console.log('AuthContext: Supabase login successful');
+      return { success: true, message: 'Logged in successfully.' };
+    } catch (error) {
+      console.error('AuthContext: Unexpected login error:', error);
+      setIsLoading(false);
+      return { success: false, message: 'An unexpected error occurred. Please try again.' };
     }
-    console.log('AuthContext: Supabase login successful');
-    return { success: true, message: 'Logged in successfully.' };
   };
 
   const signup = async (name: string, email: string, password: string) => {
@@ -310,9 +340,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     // Handle demo user logout
-    if (user?.id === 'demo-user-id') {
+    if (isDemoMode || user?.id === 'demo-user-id') {
+      console.log('AuthContext: Demo logout');
+      setIsDemoMode(false);
       setUser(null);
       setSession(null);
+      setIsLoading(false);
       return;
     }
 
@@ -358,6 +391,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return { success: true, message: 'Confirmation email sent successfully.' };
   };
 
+  const isAuthenticated = !!user && !!session && !isLoading;
+
   const value = {
     user,
     session,
@@ -370,7 +405,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     updateProfile,
     resendConfirmation,
-    isAuthenticated: !!user,
+    isAuthenticated,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

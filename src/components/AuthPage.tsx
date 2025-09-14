@@ -65,14 +65,8 @@ export default function AuthPage() {
       console.log('AuthPage: Login result:', result);
       
       if (result.success) {
-        console.log('AuthPage: Login successful, setting success message and navigating...');
-        setSuccess(result.message);
-        
-        // Add a small delay to ensure state is updated
-        setTimeout(() => {
-          console.log('AuthPage: Navigating to home page...');
-          navigate('/');
-        }, 100);
+        console.log('AuthPage: Login successful, navigating to home page...');
+        navigate('/');
       } else {
         console.log('AuthPage: Login failed:', result.message);
         setError(result.message || 'Invalid credentials. Please try again.');
@@ -110,11 +104,11 @@ export default function AuthPage() {
     const password = formData.get('password') as string;
 
     try {
-      const success = await signup(name, email, password);
+      const { success, message } = await signup(name, email, password);
       if (success) {
         navigate('/');
       } else {
-        setError('Failed to create account. Please try again.');
+        setError(message || 'Failed to create account. Please try again.');
       }
     } catch (err: any) {
       console.error('Sign up error:', err);
@@ -148,7 +142,7 @@ export default function AuthPage() {
         setSuccess(result.message);
         setError('');
       } else {
-        setError(result.message);
+        setError(result.message || 'Failed to resend confirmation email.');
         setSuccess('');
       }
     } catch (err: any) {
