@@ -88,6 +88,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
       
+      // Skip Supabase auth state changes for demo users
+      if (session?.user?.id === 'demo-user-id') {
+        console.log('AuthContext: Skipping auth state change for demo user');
+        return;
+      }
+      
       setIsLoading(true);
       
       try {
@@ -117,6 +123,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const fetchUserProfile = async (supabaseUser: SupabaseUser, session: Session) => {
+    // Skip profile fetching for demo users - they already have complete profiles
+    if (supabaseUser.id === 'demo-user-id') {
+      console.log('AuthContext: Skipping profile fetch for demo user');
+      return;
+    }
+    
     try {
       // Try to fetch profile from profiles table
       const { data: profile, error } = await supabase
@@ -201,7 +213,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
       };
 
-      // Create a mock session
+      // Create a mock session (not a real Supabase session)
       const demoSession = {
         access_token: 'demo-access-token',
         refresh_token: 'demo-refresh-token',
@@ -209,11 +221,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         expires_at: Math.floor(Date.now() / 1000) + 3600,
         token_type: 'bearer',
         user: demoUser
-      } as Session;
+      };
 
-      console.log('AuthContext: Setting demo user and session...', { demoUser, demoSession });
+      console.log('AuthContext: Setting demo user and session...', { demoUser });
       setUser(demoUser);
-      setSession(demoSession);
+      setSession(demoSession as Session);
+      setIsLoading(false); // Explicitly set loading to false for demo users
       
       console.log('AuthContext: Demo login successful');
       return { success: true, message: 'Demo login successful! Welcome to Blockademia.' };
