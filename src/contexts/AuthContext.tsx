@@ -200,6 +200,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const logout = async () => {
+    // Always reset demo mode on logout
+    if (isDemoMode) {
+      console.log('AuthContext: Logging out from demo mode...');
+      setIsDemoMode(false);
+      setUser(null);
+      setSession(null);
+      setIsLoading(false); // Explicitly set loading to false
+      return;
+    }
+    
+    // Handle regular Supabase logout
+    console.log('AuthContext: Logging out from Supabase...');
+    await supabase.auth.signOut();
+    // The onAuthStateChange listener will handle setting user/session to null
+  };
+
   const login = async (email: string, password: string) => {
     console.log('AuthContext: Login attempt with email:', email);
     
@@ -298,24 +315,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       // Get the current origin for redirect
       const redirectTo = `${window.location.origin}/auth`;
-      
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
         },
       });
 
       if (error) {
-        console.error('Social login error:', error.message);
-        throw error;
+        console.error(`${provider} login error:`, error.message);
+        throw new Error(`Failed to initiate ${provider} login: ${error.message}`);
       }
     } catch (error) {
-      console.error('Failed to initiate social login:', error);
+      console.error('Social login unexpected error:', error);
       throw error;
     }
   };
@@ -336,24 +349,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, message: error.message };
     }
     return { success: true, message: 'Password updated successfully.' };
-  };
-
-  const logout = async () => {
-    // Handle demo user logout
-    if (isDemoMode || user?.id === 'demo-user-id') {
-      console.log('AuthContext: Demo logout');
-      setIsDemoMode(false);
-      setUser(null);
-      setSession(null);
-      setIsLoading(false);
-      return;
-    }
-
-    // Regular Supabase logout for non-demo users
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error('Error logging out:', error.message);
-    }
   };
 
   const updateProfile = async (updates: Partial<UserProfile>) => {
@@ -381,17 +376,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const resendConfirmation = async (email: string) => {
     const { error } = await supabase.auth.resend({
       type: 'signup',
-      email: email
+      email: email,
     });
 
     if (error) {
       return { success: false, message: error.message };
     }
-
-    return { success: true, message: 'Confirmation email sent successfully.' };
+    return { success: true, message: 'Confirmation email resent successfully.' };
   };
-
-  const isAuthenticated = !!user && !!session && !isLoading;
 
   const value = {
     user,
@@ -405,7 +397,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     logout,
     updateProfile,
     resendConfirmation,
-    isAuthenticated,
+    isAuthenticated: !!user && !!session && !isDemoMode,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -60,16 +60,8 @@ function AppContent() {
         <Route path="/educational-overview" element={<EducationalContentOverview />} />
         
         {/* Protected routes - require authentication */}
-        <Route path="/courses" element={
-          <ProtectedRoute>
-            <CataloguePage />
-          </ProtectedRoute>
-        } />
-        <Route path="/course/:courseId" element={
-          <ProtectedRoute>
-            <CoursePreview />
-          </ProtectedRoute>
-        } />
+        <Route path="/courses" element={<CataloguePage />} />
+        <Route path="/course/:courseId" element={<CoursePreview />} />
         <Route path="/profile-setup" element={
           <ProtectedRoute>
             <ProfileSetup />
@@ -129,8 +121,8 @@ function AppContent() {
 function HomePage() {
   const { user, isLoading } = useAuth();
   
-  // Do not render authenticated sections if user data is not fully loaded
-  const showAuthenticatedSections = user && user.email && !isLoading;
+  // Be very specific: only show authenticated sections if loading is false AND we have a user with an email.
+  const showAuthenticatedSections = !isLoading && user && user.email;
 
   return (
     <main>
