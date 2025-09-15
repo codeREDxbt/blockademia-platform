@@ -59,9 +59,12 @@ function AppContent() {
         <Route path="/about" element={<About />} />
         <Route path="/educational-overview" element={<EducationalContentOverview />} />
         
-        {/* Protected routes - require authentication */}
+        {/* Publicly accessible course and premium routes */}
         <Route path="/courses" element={<CataloguePage />} />
         <Route path="/course/:courseId" element={<CoursePreview />} />
+        <Route path="/premium" element={<PremiumPurchase />} />
+
+        {/* Protected routes - require authentication */}
         <Route path="/profile-setup" element={
           <ProtectedRoute>
             <ProfileSetup />
@@ -70,11 +73,6 @@ function AppContent() {
         <Route path="/monad-setup" element={
           <ProtectedRoute requireProfile={true}>
             <MonadSetupGuide />
-          </ProtectedRoute>
-        } />
-        <Route path="/premium" element={
-          <ProtectedRoute requireProfile={true}>
-            <PremiumPurchase />
           </ProtectedRoute>
         } />
         <Route path="/compliance" element={
