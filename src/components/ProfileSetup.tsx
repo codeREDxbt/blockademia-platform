@@ -8,7 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Badge } from './ui/badge';
 import { Textarea } from './ui/textarea';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { toast } from 'sonner@2.0.3';
+// import { toast } from 'sonner';
 import { 
   User,
   MapPin,
@@ -24,7 +24,7 @@ import {
   ArrowRight,
   CheckCircle
 } from 'lucide-react';
-import BlockademiaLogo from './BlockademiaLogo';
+import StaticBlockademiaLogo from './StaticBlockademiaLogo';
 
 interface ProfileSetupProps {
   isEdit?: boolean;
@@ -129,17 +129,17 @@ export default function ProfileSetup({ isEdit = false, onComplete }: ProfileSetu
       });
       
       if (success) {
-        toast.success(isEdit ? 'Profile updated successfully!' : 'Welcome to Blockademia! Your profile is now complete.');
+        console.log(isEdit ? 'Profile updated successfully!' : 'Welcome to Blockademia! Your profile is now complete.');
         if (onComplete) {
           onComplete();
         } else {
           navigate('/');
         }
       } else {
-        toast.error('Failed to update profile. Please try again.');
+        console.log('Failed to update profile. Please try again.');
       }
     } catch (error) {
-      toast.error('An error occurred. Please try again.');
+      console.log('An error occurred. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -177,7 +177,7 @@ export default function ProfileSetup({ isEdit = false, onComplete }: ProfileSetu
         <Card className="border border-border/50 shadow-2xl">
           <CardHeader className="text-center space-y-4">
             <div className="flex items-center justify-center gap-2">
-              <BlockademiaLogo className="w-8 h-8" />
+              <StaticBlockademiaLogo className="w-8 h-8" />
               <span className="text-xl font-heading font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 Blockademia
               </span>

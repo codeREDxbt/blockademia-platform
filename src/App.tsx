@@ -1,125 +1,40 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import Header from './components/Header';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { GameProvider } from './contexts/GameContext';
+import { Web3Provider } from './contexts/Web3Context';
+import FixedHeader from './components/FixedHeader';
 import Hero from './components/Hero';
-import CoursesSection from './components/CoursesSection';
-import ProgramsSection from './components/ProgramsSection';
+import FullCourseCatalogue from './components/FullCourseCatalogue';
 import ProgressDashboard from './components/ProgressDashboard';
 import RewardsSection from './components/RewardsSection';
 import Footer from './components/Footer';
 import BlockchainBackground from './components/BlockchainBackground';
 import FloatingObjects from './components/FloatingObjects';
-import CoursePreview from './components/CoursePreviewUpdated';
-import AuthPage from './components/AuthPage';
-import ProtectedRoute from './components/ProtectedRoute';
-import ProfileSetup from './components/ProfileSetup';
-import PasswordReset from './components/PasswordReset';
-import PasswordResetInfo from './components/PasswordResetInfo';
-import NotFound from './components/NotFound';
 import ScrollToTop from './components/ScrollToTop';
-import MonadSetupGuide from './components/MonadSetupGuide';
-import DevelopmentBanner from './components/DevelopmentBanner';
-import PremiumPurchase from './components/PremiumPurchase';
-import ComplianceCheck from './components/ComplianceCheck';
-import EducationalContentOverview from './components/EducationalContentOverview';
-import About from './components/About';
-import LogoDownloader from './components/LogoDownloader';
-import QuickLogo from './components/QuickLogo';
-import PrivacyPolicy from './components/PrivacyPolicy';
-import TermsOfService from './components/TermsOfService';
-import CookiePolicy from './components/CookiePolicy';
-import CertificateManager from './components/CertificateManager';
-import EmailConfirmation from './components/EmailConfirmation';
-import SimpleMetaMaskTest from './components/SimpleMetaMaskTest';
-import EmailConfirmationDebugger from './components/EmailConfirmationDebugger';
+import AuthPage from './components/AuthPage';
 import CataloguePage from './components/CataloguePage';
-import FullCourseCatalogue from './components/FullCourseCatalogue';
-import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { GameProvider } from './contexts/GameContext';
-import { Web3Provider } from './contexts/Web3Context';
+import CoursePreview from './components/CoursePreviewUpdated';
+import PremiumPurchase from './components/PremiumPurchase';
+import About from './components/About';
+import WorkingProfileSetup from './components/WorkingProfileSetup';
+import CertificateManager from './components/CertificateManager';
 import { Toaster } from './components/ui/sonner';
 
-// Main App Content Component
-function AppContent() {
-  return (
-    <>
-      <Header />
-      <div className="container mx-auto px-4">
-        <DevelopmentBanner />
-      </div>
-      <Routes>
-        {/* Public routes - accessible without authentication */}
-        <Route path="/" element={<HomePage />} />
-        <Route path="/auth" element={<AuthPage />} />
-        <Route path="/confirm-email" element={<EmailConfirmation />} />
-        <Route path="/reset-password" element={<PasswordReset />} />
-        <Route path="/reset-password/info" element={<PasswordResetInfo />} />
-        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-        <Route path="/terms-of-service" element={<TermsOfService />} />
-        <Route path="/cookie-policy" element={<CookiePolicy />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/educational-overview" element={<EducationalContentOverview />} />
-        
-        {/* Publicly accessible course and premium routes */}
-        <Route path="/courses" element={<CataloguePage />} />
-        <Route path="/course/:courseId" element={<CoursePreview />} />
-        <Route path="/premium" element={<PremiumPurchase />} />
-
-        {/* Protected routes - require authentication */}
-        <Route path="/profile-setup" element={
-          <ProtectedRoute>
-            <ProfileSetup />
-          </ProtectedRoute>
-        } />
-        <Route path="/monad-setup" element={
-          <ProtectedRoute requireProfile={true}>
-            <MonadSetupGuide />
-          </ProtectedRoute>
-        } />
-        <Route path="/compliance" element={
-          <ProtectedRoute requireProfile={true}>
-            <ComplianceCheck />
-          </ProtectedRoute>
-        } />
-        <Route path="/certificates" element={
-          <ProtectedRoute requireProfile={true}>
-            <CertificateManager />
-          </ProtectedRoute>
-        } />
-        <Route path="/metamask-test" element={
-          <ProtectedRoute requireProfile={true}>
-            <SimpleMetaMaskTest />
-          </ProtectedRoute>
-        } />
-        
-        {/* Logo routes - require authentication */}
-        <Route path="/logo-download" element={
-          <ProtectedRoute>
-            <LogoDownloader />
-          </ProtectedRoute>
-        } />
-        <Route path="/quick-logo" element={
-          <ProtectedRoute>
-            <QuickLogo />
-          </ProtectedRoute>
-        } />
-
-        {/* Handle legacy URLs and redirects */}
-        <Route path="/preview_page.html" element={<Navigate to="/" replace />} />
-        <Route path="/preview_page" element={<Navigate to="/" replace />} />
-        
-        {/* Catch-all route for 404 */}
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      <Footer />
-    </>
-  );
-}
-
-// Home Page Component
+// HomePage Component - Working Version
 function HomePage() {
   const { user, isLoading } = useAuth();
   
-  // Be very specific: only show authenticated sections if loading is false AND we have a user with an email.
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
   const showAuthenticatedSections = !isLoading && user && user.email;
 
   return (
@@ -134,6 +49,27 @@ function HomePage() {
         </>
       )}
     </main>
+  );
+}
+
+// Main App Content Component - With Fixed Header
+function AppContent() {
+  return (
+    <>
+      <FixedHeader />
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/courses" element={<CataloguePage />} />
+        <Route path="/course/:courseId" element={<CoursePreview />} />
+        <Route path="/premium" element={<PremiumPurchase />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/profile-setup" element={<WorkingProfileSetup />} />
+        <Route path="/certificates" element={<CertificateManager />} />
+        <Route path="*" element={<div className="p-8 text-white">404 - Page Not Found</div>} />
+      </Routes>
+      <Footer />
+    </>
   );
 }
 
