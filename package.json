@@ -4,10 +4,17 @@
       "description": "A comprehensive educational platform for web development and blockchain technology",
       "homepage": "https://www.blockademia.live",
       "repository": {
-        "type": "git",
-        "url": "https://github.com/codeREDxbt/blockademia-platform.git"
+            "type": "git",
+            "url": "https://github.com/codeREDxbt/blockademia-platform.git"
       },
-      "keywords": ["education", "blockchain", "web-development", "react", "typescript", "learning-platform"],
+      "keywords": [
+            "education",
+            "blockchain",
+            "web-development",
+            "react",
+            "typescript",
+            "learning-platform"
+      ],
       "author": "Blockademia Team",
       "private": true,
       "dependencies": {
@@ -64,6 +71,8 @@
       },
       "devDependencies": {
             "@types/node": "^20.10.0",
+            "@types/react": "^19.1.13",
+            "@types/react-dom": "^19.1.9",
             "@vitejs/plugin-react-swc": "^3.10.2",
             "vite": "6.3.5"
       },
