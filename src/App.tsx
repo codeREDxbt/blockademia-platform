@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { WalletProvider } from './contexts/WalletContext';
 import { GameProvider } from './contexts/GameContext';
 import { Web3Provider } from './contexts/Web3Context';
 import FixedHeader from './components/FixedHeader';
@@ -76,38 +77,40 @@ function AppContent() {
 export default function App() {
   return (
     <AuthProvider>
-      <Web3Provider>
-        <GameProvider>
-          <Router>
-            <ScrollToTop />
-            <div className="min-h-screen bg-background text-foreground relative">
-              {/* Blockchain-inspired background */}
-              <BlockchainBackground />
-              
-              {/* Floating animated objects */}
-              <FloatingObjects />
-              
-              {/* Main content with higher z-index */}
-              <div className="relative z-10">
-                <AppContent />
+      <WalletProvider>
+        <Web3Provider>
+          <GameProvider>
+            <Router>
+              <ScrollToTop />
+              <div className="min-h-screen bg-background text-foreground relative">
+                {/* Blockchain-inspired background */}
+                <BlockchainBackground />
+                
+                {/* Floating animated objects */}
+                <FloatingObjects />
+                
+                {/* Main content with higher z-index */}
+                <div className="relative z-10">
+                  <AppContent />
+                </div>
+                
+                {/* Toast notifications */}
+                <Toaster 
+                  position="bottom-right"
+                  theme="dark"
+                  toastOptions={{
+                    style: {
+                      background: 'var(--card)',
+                      border: '1px solid var(--border)',
+                      color: 'var(--foreground)',
+                    },
+                  }}
+                />
               </div>
-              
-              {/* Toast notifications */}
-              <Toaster 
-                position="bottom-right"
-                theme="dark"
-                toastOptions={{
-                  style: {
-                    background: 'var(--card)',
-                    border: '1px solid var(--border)',
-                    color: 'var(--foreground)',
-                  },
-                }}
-              />
-            </div>
-          </Router>
-        </GameProvider>
-      </Web3Provider>
+            </Router>
+          </GameProvider>
+        </Web3Provider>
+      </WalletProvider>
     </AuthProvider>
   );
 }

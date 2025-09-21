@@ -1,13 +1,16 @@
-import { User, Menu, X, BookOpen, LogIn, LogOut, Crown, ChevronDown, Settings, Award, BarChart3 } from 'lucide-react';
+import { User, Menu, X, BookOpen, LogIn, LogOut, Crown, ChevronDown, Settings, Award, BarChart3, Wallet } from 'lucide-react';
 import { Button } from './ui/button';
 import { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import { useWallet } from '../contexts/WalletContext';
 import StaticBlockademiaLogo from './StaticBlockademiaLogo';
+import WalletButton from './WalletButton';
 
 // Enhanced User Profile with Dropdown
 function UserProfileDropdown() {
   const { user, logout } = useAuth();
+  const { isConnected, address, walletType } = useWallet();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const navigate = useNavigate();
   
@@ -28,6 +31,14 @@ function UserProfileDropdown() {
     certificates: 5
   };
 
+  const getAuthMethodDisplay = () => {
+    if (user?.auth_method === 'wallet' && isConnected) {
+      const walletIcon = walletType === 'metamask' ? '🦊' : walletType === 'trust' ? '🛡️' : '📱';
+      return `${walletIcon} Wallet`;
+    }
+    return 'Demo Mode';
+  };
+
   return (
     <div className="relative">
       {/* Profile Button */}
@@ -42,7 +53,7 @@ function UserProfileDropdown() {
           <div className="text-sm font-medium text-foreground">{user?.user_metadata?.name || 'Demo User'}</div>
           <div className="text-xs text-muted-foreground flex items-center">
             <Crown className="w-3 h-3 mr-1 text-yellow-400" />
-            Premium
+            Premium • {getAuthMethodDisplay()}
           </div>
         </div>
         <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
@@ -271,6 +282,7 @@ export default function FixedHeader() {
                   <BookOpen className="w-4 h-4 mr-2" />
                   Browse Courses
                 </Button>
+                <WalletButton variant="outline" size="sm" />
                 <UserProfileDropdown />
               </>
             ) : (
