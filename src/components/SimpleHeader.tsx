@@ -74,7 +74,7 @@ export default function SimpleHeader() {
               <User className="w-5 h-5" />
               <span className="text-sm">{user?.user_metadata?.name || 'Demo User'}</span>
             </div>
-            <Crown className="w-5 h-5 text-yellow-400" title="Premium User" />
+            <Crown className="w-5 h-5 text-yellow-400" />
           </div>
 
           {/* Mobile Menu Button */}

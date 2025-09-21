@@ -59,23 +59,23 @@ export default function ProfileSetup({ isEdit = false, onComplete }: ProfileSetu
   const [isLoading, setIsLoading] = useState(false);
   const [step, setStep] = useState(1);
   const [profileData, setProfileData] = useState({
-    name: user?.name || '',
-    bio: user?.bio || '',
-    location: user?.location || '',
-    website: user?.website || '',
-    skills: user?.skills || [],
-    learningGoals: user?.learningGoals || []
+    name: user?.profile?.name || '',
+    bio: user?.profile?.bio || '',
+    location: user?.profile?.location || '',
+    website: user?.profile?.website || '',
+    skills: user?.profile?.skills || [],
+    learningGoals: user?.profile?.learning_goals || []
   });
 
   useEffect(() => {
     if (user && isEdit) {
       setProfileData({
-        name: user.name || '',
-        bio: user.bio || '',
-        location: user.location || '',
-        website: user.website || '',
-        skills: user.skills || [],
-        learningGoals: user.learningGoals || []
+        name: user.profile.name || '',
+        bio: user.profile.bio || '',
+        location: user.profile.location || '',
+        website: user.profile.website || '',
+        skills: user.profile.skills || [],
+        learningGoals: user.profile.learning_goals || []
       });
     }
   }, [user, isEdit]);
@@ -125,18 +125,15 @@ export default function ProfileSetup({ isEdit = false, onComplete }: ProfileSetu
     try {
       const success = await updateProfile({
         ...profileData,
-        profileComplete: true
+        profile_complete: true
       });
       
-      if (success) {
-        console.log(isEdit ? 'Profile updated successfully!' : 'Welcome to Blockademia! Your profile is now complete.');
-        if (onComplete) {
-          onComplete();
-        } else {
-          navigate('/');
-        }
+      // Assuming the update is successful, as the function does not return a value
+      console.log(isEdit ? 'Profile updated successfully!' : 'Welcome to Blockademia! Your profile is now complete.');
+      if (onComplete) {
+        onComplete();
       } else {
-        console.log('Failed to update profile. Please try again.');
+        navigate('/');
       }
     } catch (error) {
       console.log('An error occurred. Please try again.');
@@ -150,22 +147,18 @@ export default function ProfileSetup({ isEdit = false, onComplete }: ProfileSetu
   }
 
   const getProviderIcon = () => {
-    switch (user.provider) {
-      case 'google':
+    switch (user.auth_method) {
+      case 'wallet':
         return <Chrome className="w-4 h-4" />;
-      case 'github':
-        return <Github className="w-4 h-4" />;
       default:
         return <Mail className="w-4 h-4" />;
     }
   };
 
   const getProviderColor = () => {
-    switch (user.provider) {
-      case 'google':
+    switch (user.auth_method) {
+      case 'wallet':
         return 'bg-blue-500/10 text-blue-500 border-blue-500/20';
-      case 'github':
-        return 'bg-gray-500/10 text-gray-400 border-gray-500/20';
       default:
         return 'bg-primary/10 text-primary border-primary/20';
     }
@@ -222,9 +215,9 @@ export default function ProfileSetup({ isEdit = false, onComplete }: ProfileSetu
                 <div className="text-center space-y-4">
                   <div className="relative inline-block">
                     <Avatar className="w-20 h-20">
-                      <AvatarImage src={user.avatar} alt={user.name} />
+                      <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata.name} />
                       <AvatarFallback className="text-lg">
-                        {user.name.split(' ').map(n => n[0]).join('')}
+                        {user.user_metadata.name.split(' ').map(n => n[0]).join('')}
                       </AvatarFallback>
                     </Avatar>
                     <Button
@@ -240,7 +233,7 @@ export default function ProfileSetup({ isEdit = false, onComplete }: ProfileSetu
                     <div className="flex items-center justify-center gap-2">
                       <Badge variant="secondary" className={getProviderColor()}>
                         {getProviderIcon()}
-                        {user.provider === 'email' ? 'Email' : user.provider?.charAt(0).toUpperCase() + user.provider?.slice(1)}
+                        {user.auth_method === 'demo' ? 'Email' : user.auth_method?.charAt(0).toUpperCase() + user.auth_method?.slice(1)}
                       </Badge>
                     </div>
                     <p className="text-sm text-muted-foreground">{user.email}</p>

@@ -123,14 +123,6 @@ export default function Header() {
             {isAuthenticated ? (
               <>
                 <WalletConnect />
-                <Button 
-                  onClick={handleCoursesClick}
-                  size="sm" 
-                  className="bg-gradient-to-r from-accent to-primary hover:from-primary hover:to-accent gradient-animate text-accent-foreground font-semibold font-tech btn-pulse-glow transition-all duration-300 hover:scale-105"
-                >
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Browse Courses
-                </Button>
                 <UserProfile />
               </>
             ) : (
@@ -212,21 +204,13 @@ export default function Header() {
                           <User className="w-5 h-5 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <div className="font-medium">{user?.name}</div>
+                          <div className="font-medium">{user?.user_metadata?.name}</div>
                           <div className="text-sm text-muted-foreground">{user?.email}</div>
                         </div>
                       </div>
                       <div className="w-full" onClick={() => setIsMenuOpen(false)}>
                         <WalletConnect />
                       </div>
-                      <Button 
-                        onClick={() => { handleCoursesClick(); setIsMenuOpen(false); }} 
-                        size="sm" 
-                        className="w-full bg-gradient-to-r from-accent to-primary hover:from-primary hover:to-accent gradient-animate text-accent-foreground font-semibold h-12"
-                      >
-                        <BookOpen className="w-4 h-4 mr-2" />
-                        Browse Courses
-                      </Button>
                       <Button 
                         onClick={() => { handleDashboardClick(); setIsMenuOpen(false); }} 
                         variant="outline" 

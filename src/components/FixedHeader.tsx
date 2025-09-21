@@ -274,14 +274,6 @@ export default function FixedHeader() {
           <div className="hidden lg:flex items-center space-x-4 flex-shrink-0">
             {isAuthenticated ? (
               <>
-                <Button 
-                  onClick={handleCoursesClick}
-                  size="sm" 
-                  className="bg-gradient-to-r from-accent to-primary hover:from-primary hover:to-accent gradient-animate text-accent-foreground font-semibold font-tech btn-pulse-glow transition-all duration-300 hover:scale-105"
-                >
-                  <BookOpen className="w-4 h-4 mr-2" />
-                  Browse Courses
-                </Button>
                 <WalletButton variant="outline" size="sm" />
                 <UserProfileDropdown />
               </>

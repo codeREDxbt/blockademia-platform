@@ -31,6 +31,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   loginWithWallet: (address: string, walletType: string) => Promise<void>;
   switchToDemo: () => void;
+  updateProfile: (profileData: Partial<UserProfile>) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -93,6 +94,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setIsLoading(false);
   };
 
+  const updateProfile = async (profileData: Partial<UserProfile>) => {
+    if (user) {
+      const updatedProfile = { ...user.profile, ...profileData, profile_complete: true };
+      const updatedUser = { ...user, profile: updatedProfile };
+      setUser(updatedUser);
+      // Here you would typically also update the backend
+    }
+  };
+
   const switchToDemo = () => {
     setIsLoading(true);
     const demoUser: User = {
@@ -119,22 +129,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setUser(null);
-      setIsLoading(false);
-    }, 500);
+    // For demo purposes, just clear the user
+    setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{
-      user,
-      isLoading,
-      logout,
-      isAuthenticated: !!user,
-      loginWithWallet,
-      switchToDemo
-    }}>
+    <AuthContext.Provider value={{ user, isLoading, logout, isAuthenticated: !!user, loginWithWallet, switchToDemo, updateProfile }}>
       {children}
     </AuthContext.Provider>
   );
