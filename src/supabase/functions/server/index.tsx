@@ -188,3 +188,44 @@ app.put("/make-server-ee2f9f16/profile/:userId", async (c) => {
 });
 
 Deno.serve(app.fetch);
+
+// --- AI Chat proxy endpoint (example) ---
+// Use this route if you prefer not to expose model keys to the browser.
+// Add environment variables in the Supabase Functions UI: AI_PROVIDER, AI_API_KEY, AI_MODEL
+app.post('/ai/chat', async (c) => {
+  try {
+    const { prompt } = await c.req.json();
+    if (!prompt) return c.json({ error: 'Missing prompt' }, 400);
+
+    const provider = Deno.env.get('AI_PROVIDER')?.toLowerCase();
+    const apiKey = Deno.env.get('AI_API_KEY');
+    const model = Deno.env.get('AI_MODEL') || '';
+
+    if (!apiKey || !provider) return c.json({ error: 'AI provider not configured' }, 500);
+
+    if (provider === 'grok') {
+      const res = await fetch('https://api.grok.ai/v1/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ model: model || 'grok-1', prompt }),
+      });
+      const data = await res.json();
+      return c.json({ response: data?.response || null });
+    }
+
+    if (provider === 'openai') {
+      const res = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify({ model, messages: [{ role: 'user', content: prompt }] }),
+      });
+      const data = await res.json();
+      return c.json({ response: data?.choices?.[0]?.message?.content || null });
+    }
+
+    return c.json({ error: 'AI provider not supported' }, 400);
+  } catch (err) {
+    console.error('AI chat error', err);
+    return c.json({ error: 'Internal server error' }, 500);
+  }
+});

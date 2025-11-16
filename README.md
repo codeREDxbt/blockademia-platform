@@ -89,6 +89,34 @@ npm run preview      # Preview production build
 npm run lint         # Run ESLint
 ```
 
+## 🤖 Chatbot (AI assistant)
+
+This project includes a minimal, friendly chatbot that can be powered by different AI backends (Grok, OpenAI, Claude). By default the chat UI falls back to a mock response — to connect a real AI power, add the provider and API key to your `.env`.
+
+1. Add AI environment variables in `src/env.example` and your `.env` (choose one):
+
+```
+VITE_AI_PROVIDER=grok
+VITE_AI_API_KEY=YOUR_API_KEY
+VITE_AI_MODEL=grok-1
+```
+
+2. Alternatively, use a server-side proxy to keep the API key secret. We include a sample supabase function `src/supabase/functions/server/index.tsx` with an `/ai/chat` endpoint. Configure in your server env:
+
+```
+AI_PROVIDER=grok
+AI_API_KEY=YOUR_API_KEY
+AI_MODEL=grok-1
+```
+
+Then set `VITE_AI_PROXY` in `.env` to the proxy URL (e.g., `https://example.supabase.co/functions/v1/ai/chat`).
+
+The chat button is bottom-right and will animate into view. You can adjust its spacing (so it doesn't collide with other floating UI like a scroll-to-top button) by setting the `--chatbot-bottom` CSS variable in `src/index.css`.
+
+Notes:
+- Press `Ctrl/Cmd+K` or `/` to open the chat and focus the input quickly.
+- You can choose a persona in the chat header: `Friendly`, `Witty`, or `Grok`. The selection persists across sessions.
+
 ### Project Structure
 
 ```

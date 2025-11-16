@@ -20,6 +20,7 @@ import About from './components/About';
 import WorkingProfileSetup from './components/WorkingProfileSetup';
 import CertificateManager from './components/CertificateManager';
 import { Toaster } from './components/ui/sonner';
+import Chatbot from './components/Chatbot';
 
 // HomePage Component - Working Version
 function HomePage() {
@@ -106,6 +107,8 @@ export default function App() {
                     },
                   }}
                 />
+                {/* AI Chatbot (floating) */}
+                <Chatbot />
               </div>
             </Router>
           </GameProvider>
