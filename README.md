@@ -26,6 +26,7 @@ A comprehensive educational platform offering free courses in web development, b
 - **Database:** Supabase PostgreSQL
 - **Deployment:** Vercel
 - **Web3:** Ethereum, Solana integration
+- **AI:** Provider-agnostic via OpenAI-compatible APIs (Groq, OpenRouter, xAI)
 - **UI Components:** Custom component library
 
 ## 🛠️ Quick Start
@@ -93,25 +94,42 @@ npm run lint         # Run ESLint
 
 This project includes a minimal, friendly chatbot that can be powered by different AI backends (Grok, OpenAI, Claude). By default the chat UI falls back to a mock response — to connect a real AI power, add the provider and API key to your `.env`.
 
-1. Add AI environment variables in `src/env.example` and your `.env` (choose one):
+1. Add AI environment variables in your `.env` (choose one provider):
 
 ```
-VITE_AI_PROVIDER=grok
+VITE_AI_PROVIDER=groq
 VITE_AI_API_KEY=YOUR_API_KEY
-VITE_AI_MODEL=grok-1
+VITE_AI_MODEL=llama-3.3-70b-versatile
+VITE_AI_BASE_URL=https://api.groq.com/openai/v1
 ```
 
-2. Alternatively, use a server-side proxy to keep the API key secret. We include a sample supabase function `src/supabase/functions/server/index.tsx` with an `/ai/chat` endpoint. Configure in your server env:
+Alternative providers (example values):
+
+```
+# OpenRouter
+VITE_AI_PROVIDER=openrouter
+VITE_AI_API_KEY=YOUR_API_KEY
+VITE_AI_MODEL=meta-llama/llama-3.1-70b-instruct
+VITE_AI_BASE_URL=https://openrouter.ai/api/v1
+
+# xAI (Grok)
+VITE_AI_PROVIDER=xai
+VITE_AI_API_KEY=YOUR_API_KEY
+VITE_AI_MODEL=grok-2
+VITE_AI_BASE_URL=https://api.x.ai/v1
+```
+
+2. Optionally, use a server-side proxy to keep the API key secret. We include a sample Supabase Function `supabase/functions/server/index.tsx` with an `/ai/chat` endpoint. Configure these on the server:
 
 ```
 AI_PROVIDER=grok
 AI_API_KEY=YOUR_API_KEY
-AI_MODEL=grok-1
+AI_MODEL=llama-3.3-70b-versatile
 ```
 
-Then set `VITE_AI_PROXY` in `.env` to the proxy URL (e.g., `https://example.supabase.co/functions/v1/ai/chat`).
+Then set `VITE_AI_PROXY` in `.env` to the proxy URL (e.g., `https://example.supabase.co/functions/v1/ai/chat`). When `VITE_AI_PROXY` is set, the client will use it instead of calling the provider directly.
 
-The chat button is bottom-right and will animate into view. You can adjust its spacing (so it doesn't collide with other floating UI like a scroll-to-top button) by setting the `--chatbot-bottom` CSS variable in `src/index.css`.
+The chat button is bottom-right with a high z-index. If you need to reposition it, edit the inline `style` on the container in `src/components/Chatbot.tsx`.
 
 Notes:
 - Press `Ctrl/Cmd+K` or `/` to open the chat and focus the input quickly.
@@ -140,6 +158,11 @@ blockademia-platform/
 2. Add environment variables in Vercel dashboard:
    - `VITE_SUPABASE_URL`
    - `VITE_SUPABASE_ANON_KEY`
+   - `VITE_AI_PROVIDER`
+   - `VITE_AI_API_KEY`
+   - `VITE_AI_MODEL`
+   - `VITE_AI_BASE_URL` (if required by your provider)
+   - `VITE_AI_PROXY` (if using a server-side proxy)
 3. Deploy automatically on every push to `master`
 
 ### Manual Deployment
@@ -157,6 +180,12 @@ npm run build
 4. Create the profiles table for user data
 
 See `PRODUCTION_FIX_GUIDE.md` for detailed setup instructions.
+
+## 📖 Documentation
+
+For a plain-English tech overview, hackathon-ready questionnaire, future scope, and a simple explanation of the code, see:
+
+- `TECH_OVERVIEW_AND_HACKATHON.md`
 
 ## 🤝 Contributing
 
